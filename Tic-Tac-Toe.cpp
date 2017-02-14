@@ -1,4 +1,4 @@
-//   Version 2
+//   Version 3
 
 #include <iostream>
 #include <string>
@@ -11,7 +11,7 @@ using namespace std;
     Return Code:
     -1
     -2  Spot Taken on Grid
-    -3
+    -3  No best move
     -4
     -5  Input out of Range
     -6  Input is Valid
@@ -35,6 +35,8 @@ int CheckWin(char turnID, char board[3][3]);
 int CheckDraw(char board[3][3]);
 void ClearBoard(char board[3][3]);
 int BestMove(char board[3][3]);
+int CheckBoard(int start1, int start2, int cnt, int numTimes, char board[3][3]);
+int CheckVBoard(int start1, int start2, int cnt, int numTimes, char board[3][3]);
 
 //BotCheck
 
@@ -83,8 +85,8 @@ int main ()
         while(test == -5 or test == -2)
         {   
             int move = BestMove(board);
-
-            if(move != 0)
+            cout << " bot best move called " << endl;
+            if(move != -3)
             {
                input = move;
                test = -6;
@@ -93,11 +95,9 @@ int main ()
             {
                input = rand()%9;
                test = CheckInput(input, turnID);
-            }
-
-            if(test == -6)
-               test = CheckGridVacancy(turnID, input, board);
-
+               if(test == -6)
+                  test = CheckGridVacancy(turnID, input, board);
+	    }
         }
         cout << "Bot plays " << input << endl;
         Convert(turnID, input, board);
@@ -222,81 +222,97 @@ int CheckInput(int input, char turnID)
 
 int BestMove(char board[3][3])
 {
-    int stopPlayer = 0;
-    int win = 0;
+    int move;  
+
+    cout << endl << " h board";
+    move = CheckBoard(0, 0, 1, 3, board);
+    
+    cout << endl <<" v board - h move: " << move;
+    if(move !=-3)
+         move = CheckVBoard(0, 0, 1, 3, board);
+
+         cout << endl << " d board - v move:" << move;
+    if(move !=-3)
+         move = CheckBoard(0, 0, 1, 1, board);
+
+         cout << endl << " s board - s move: " << move;
+    if(move!=-3)
+         move = CheckBoard(2, 2, -1, 1, board);
+
+    return move;
+}
+
+int CheckBoard(int start1, int start2, int cnt, int numTimes, char board[3][3])
+{
     int flag = 0;
 
-
-    //Check Horizontal and Vertical
-    for(int i=0; i<3; i++)
+    for(int i=start1; i<(start1+numTimes); i++)
     {
-       cnt = 0;
-       for(int j=0; j<3; j++)
+       int stopPlayer = 0;
+       int win = 0;
+       cout << endl << "Board stopPlayer was reset" << endl;
+
+       for(int j=start2; j<(start2+numTimes); j=j+cnt)
        {
           if(board[i][j] == PLAYERCHAR)
-             stopPlayer++;
+{ cout << endl << "stop player: " << stopPlayer;
+             stopPlayer++; cout << endl << "stop player: " << stopPlayer;}
           else if(board[i][j] == BOTCHAR)
              win+=5;
           else
-             flag = i*3+j+1;    // Sets flag to board position
-          
+             flag = i*3+j+1;         // Sets flag to empty board position
 
-          if(win == 10)         // Tells the bot to win
-             return flag;
-          else if(stopPlayer == 2)
-             return flag;       // Tells the bot to stop player from winning
 
-       cout << endl << "Flag is: " << flag;
-              cout << endl << "Cnt is: "  << cnt << endl;
-              
-                       
+          if(win == 10)              // Tells the bot to win
+         {    return flag;
+          cout << "win flag returned : " << win << endl;}
+          else if(stopPlayer == 2)   // Tells the bot to stop player from winning
+{             return flag;
+cout << "stopPlayer flag returned: " << flag << endl; }
+             cout << endl << "Check spot " << i*3+j+1;
+             cout << endl << "Flag is " << flag;
+             cout << endl << "w/e " << stopPlayer << " " << win << endl;
        }
     }
 
-    //Check Left to Right
-    for(int k=0; k<3; k++)
+    // If no best move, return -3
+    return -3;
+}
+
+
+int CheckVBoard(int start1, int start2, int cnt, int numTimes, char board[3][3])
+{
+    int flag = 0;
+
+    for(int i=start1; i<numTimes; i++)
     {
-       cnt = 0;
-       for(int m=0; m<0; m++)
+       int stopPlayer = 0;
+       int win = 0;
+       cout << endl << "vBoard stopPlayer was reset" << endl;
+
+       for(int j=start2; j<numTimes; j=j+cnt)
        {
-          if(board[k][m] == PLAYERCHAR)
+          if(board[j][i] == PLAYERCHAR)
              stopPlayer++;
-          else if(board[k][m] == BOTCHAR)
+          else if(board[j][i] == BOTCHAR)
              win+=5;
           else
-             flag = k*3+m+1;
+             flag = j*3+i+1;         // Sets flag to empty board position
 
 
-
-          if(win == 10)
+          if(win == 10)              // Tells the bot to win
              return flag;
-          else if(stopPlayer == 2)
+          else if(stopPlayer == 2)   // Tells the bot to stop player from winning
              return flag;
+             
+             cout << endl << "Check spot " << i*3+j+1;
+             cout << endl << "Flag is " << flag;
+             cout << endl << "w/e " << stopPlayer << " " << win << endl;
        }
     }
 
-    //Check Right to Left
-    for(int n=2; n<7; n+=n+2)
-    {
-        cnt = 0;
-        for(int h=2; h>=0; h= h-1)
-        {
-          if(board[n][h] == PLAYERCHAR)
-             stopPlayer++;
-          else if(board[n][h] == BOTCHAR)
-             win+=5;
-          else
-             flag = n*3+h+1;
-
-
-          if(win == 10)
-             return flag;
-          else if(stopPlayer == 2)
-             return flag;
-        }
-     }
-
-    return 0;
+    // If no best move, return -3
+    return -3;
 }
 
 void Display(char board[3][3])
