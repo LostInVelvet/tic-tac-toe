@@ -1,5 +1,3 @@
-// Version 5
-
 #include <iostream>
 #include <string>
 #include <cstdlib>
@@ -11,7 +9,7 @@ using namespace std;
     Return Code:
     -1
     -2  Spot Taken on Grid
-    -3  No best move
+    -3
     -4
     -5  Input out of Range
     -6  Input is Valid
@@ -22,7 +20,7 @@ using namespace std;
 
 const char PLAYERCHAR = 'X';
 const char BOTCHAR  = 'O';
-const char BLANK = ' ';
+const char BLANK = 'I';
 const int MAXROUNDS = 5;
 
 void DefaultDisplay();
@@ -34,6 +32,7 @@ int CheckGridVacancy(char turnID, int input, char board[3][3]);
 int CheckWin(char turnID, char board[3][3]);
 int CheckDraw(char board[3][3]);
 void ClearBoard(char board[3][3]);
+int BestMove(char board[3][3]);
 
 //BotCheck
 
@@ -81,10 +80,23 @@ int main ()
         turnID = BOTCHAR;
         while(test == -5 or test == -2)
         {   
+            int move;
+            move = BestMove(board);
+
+            if(move != 0)
+            {
+               input = move;
+               test = -6;
+            }
+            else
+            {
                input = rand()%9;
                test = CheckInput(input, turnID);
-               if(test == -6)
-                  test = CheckGridVacancy(turnID, input, board);
+            }
+
+            if(test == -6)
+               test = CheckGridVacancy(turnID, input, board);
+
         }
         cout << "Bot plays " << input << endl;
         Convert(turnID, input, board);
@@ -205,6 +217,79 @@ int CheckInput(int input, char turnID)
         return -5;
     }
     else return -6;
+}
+
+int BestMove(char board[3][3])
+{
+    int stopPlayer = 0;
+    int win = 0;
+    int cnt = 0;
+    int flag = 0;
+
+
+    //Check Horizontal and Vertical
+    for(int i=0; i<3; i++)
+    {
+       for(int j=0; j<3; j++)
+       {
+          if(board[i][j] == PLAYERCHAR)
+             cnt++;
+          else if(board[i][j] == BOTCHAR)
+             cnt+=5;
+          else
+             flag = i*3+j+1;    // Sets flag to board position
+
+
+          if(cnt == 10)         // Tells the bot to win
+             return flag;
+          else if(cnt == 2)
+             return flag;       // Tells the bot to stop player from winning
+       }
+    }
+
+    //Check Left to Right
+    for(int k=0; k<3; k++)
+    {
+       for(int m=0; m<0; m++)
+       {
+          if(board[k][m] == PLAYERCHAR)
+             cnt++;
+          else if(board[k][m] == BOTCHAR)
+             cnt+=5;
+          else
+             flag = k*3+m+1;    // Sets flag to board position
+
+
+
+          if(cnt == 10)         // Tells the bot to win
+             return flag;
+          else if(cnt == 2)
+             return flag;       // Tells the bot to stop player from winning
+       }
+    }
+
+    //Check Right to Left
+    for(int n=2; n<7; n+=n+2)
+    {
+        for(int r=2; r>=0; r= r-1)
+        {
+          if(board[n][r] == PLAYERCHAR)
+             cnt++;
+          else if(board[r][r] == BOTCHAR)
+             cnt+=5;
+          else
+             flag = n*3+r+1;    // Sets flag to board position
+
+
+
+          if(cnt == 10)         // Tells the bot to win
+             return flag;
+          else if(cnt == 2)
+             return flag;       // Tells the bot to stop player from winning
+        }
+     }
+
+    return 0;
 }
 
 void Display(char board[3][3])
